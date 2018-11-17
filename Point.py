@@ -18,95 +18,100 @@ class Point:
 # rotate_about  -- rotate around another point
 
 
-    def __init__(self, x=0.0, y=0.0):
-        self.x = x
-        self.y = y
+	def __init__(self, x=0.0, y=0.0):
+		self.x = x
+		self.y = y
 
-    def __add__(self, p):
-        """Point(x1+x2, y1+y2)"""
-        return Point(self.x+p.x, self.y+p.y)
+	def __add__(self, p):
+		"""Point(x1+x2, y1+y2)"""
+		return Point(self.x+p.x, self.y+p.y)
 
-    def __sub__(self, p):
-        """Point(x1-x2, y1-y2)"""
-        return Point(self.x-p.x, self.y-p.y)
+	def __sub__(self, p):
+		"""Point(x1-x2, y1-y2)"""
+		return Point(self.x-p.x, self.y-p.y)
 
-    def __mul__( self, scalar ):
-        """Point(x1*x2, y1*y2)"""
-        return Point(self.x*scalar, self.y*scalar)
+	def __mul__( self, scalar ):
+		"""Point(x1*x2, y1*y2)"""
+		return Point(self.x*scalar, self.y*scalar)
 
-    def __div__(self, scalar):
-        """Point(x1/x2, y1/y2)"""
-        return Point(self.x/scalar, self.y/scalar)
+	def __div__(self, scalar):
+		"""Point(x1/x2, y1/y2)"""
+		return Point(self.x/scalar, self.y/scalar)
 
-    def __str__(self):
-        return "(%s, %s)" % (self.x, self.y)
+	def __str__(self):
+		return "(%s, %s)" % (self.x, self.y)
 
-    def __repr__(self):
-        return "%s(%r, %r)" % (self.__class__.__name__, self.x, self.y)
+	def __repr__(self):
+		return "%s(%r, %r)" % (self.__class__.__name__, self.x, self.y)
 
-    def length(self):
-        return math.sqrt(self.x**2 + self.y**2)
+	def length(self):
+		return math.sqrt(self.x**2 + self.y**2)
 
-    def distance_to(self, p):
-        """Calculate the distance between two points."""
-        return (self - p).length()
+	def distance_to(self, p):
+		"""Calculate the distance between two points."""
+		return (self - p).length()
 
-    def as_tuple(self):
-        """(x, y)"""
-        return (self.x, self.y)
+	def as_tuple(self):
+		"""(x, y)"""
+		return (self.x, self.y)
 
-    def clone(self):
-        """Return a full copy of this point."""
-        return Point(self.x, self.y)
+	def clone(self):
+		"""Return a full copy of this point."""
+		return Point(self.x, self.y)
 
-    def integerize(self):
-        """Convert co-ordinate values to integers."""
-        self.x = int(self.x)
-        self.y = int(self.y)
+	def integerize(self):
+		"""Convert co-ordinate values to integers."""
+		self.x = int(self.x)
+		self.y = int(self.y)
+		return (int(self.x), int(self.y))
 
-    def floatize(self):
-        """Convert co-ordinate values to floats."""
-        self.x = float(self.x)
-        self.y = float(self.y)
+	def floatize(self):
+		"""Convert co-ordinate values to floats."""
+		self.x = float(self.x)
+		self.y = float(self.y)
 
-    def move_to(self, x, y):
-        """Reset x & y coordinates."""
-        self.x = x
-        self.y = y
+	def move_to(self, x, y):
+		"""Reset x & y coordinates."""
+		self.x = x
+		self.y = y
 
-    def slide(self, p):
-        '''Move to new (x+dx,y+dy).
+	def slide(self, p):
+		'''Move to new (x+dx,y+dy).
 
-        Can anyone think up a better name for this function?
-        slide? shift? delta? move_by?
-        '''
-        self.x = self.x + p.x
-        self.y = self.y + p.y
+		Can anyone think up a better name for this function?
+		slide? shift? delta? move_by?
+		'''
+		self.x = self.x + p.x
+		self.y = self.y + p.y
 
-    def slide_xy(self, dx, dy):
-        '''Move to new (x+dx,y+dy).
+	def slide_xy(self, dx, dy):
+		'''Move to new (x+dx,y+dy).
 
-        Can anyone think up a better name for this function?
-        slide? shift? delta? move_by?
-        '''
-        self.x = self.x + dx
-        self.y = self.y + dy
+		Can anyone think up a better name for this function?
+		slide? shift? delta? move_by?
+		'''
+		self.x = self.x + dx
+		self.y = self.y + dy
 
-    def rotate(self, rad):
-        s, c = [f(rad) for f in (math.sin, math.cos)]
-        x, y = (c*self.x - s*self.y, s*self.x + c*self.y)
-        return Point(x, y)
+	def rotate(self, rad):
+		s, c = [f(rad) for f in (math.sin, math.cos)]
+		x, y = (c*self.x - s*self.y, s*self.x + c*self.y)
+		return Point(x, y)
 
-    def rotate_about(self, p, theta):
-        """Rotate counter-clockwise around a point, by theta degrees.
+	def rotate_about(self, p, theta):
+		"""Rotate counter-clockwise around a point, by theta degrees.
 
-        Positive y goes *up,* as in traditional mathematics.
+		Positive y goes *up,* as in traditional mathematics.
 
-        The new position is returned as a new Point.
-        """
-        result = self.clone()
-        result.slide(-p.x, -p.y)
-        result.rotate(theta)
-        result.slide(p.x, p.y)
-        return result
-
+		The new position is returned as a new Point.
+		"""
+		result = self.clone()
+		result.slide(-p.x, -p.y)
+		result.rotate(theta)
+		result.slide(p.x, p.y)
+		return result
+	def return_x(self):
+		return self.x
+		
+	def return_y(self):
+		return self.y
