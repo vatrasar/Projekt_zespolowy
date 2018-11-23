@@ -1,3 +1,6 @@
+import time
+
+
 class Scheduler:
 
 	def __init__(self,sensors_list,target_list,sensing_range, paint):
@@ -22,14 +25,20 @@ class Scheduler:
 	def get_sensor_list(self):
 		pass
 	def run(self):
+
 		#Tu algorytm symulacji
 		
 		#Przykładowy kod prezentujący interface, musisz podać co najmniej
 		#1000 sensorów. Przykładowe dane do przetestowania tego kodu
 		#1000 sensorów, 1000 targetów, 10 zasięg, 10 bateria, 
 		#1000 wysokość, 1000 szerokość
+
+
 		i=0
 		while i < 1000:
 			self.paint.paint(self)
 			self.sensor_list[i].active = False
 			i+=1
+
+	def sensor_target_covering(self,sensor,targets_list):
+
