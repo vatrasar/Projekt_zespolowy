@@ -11,5 +11,10 @@ class Sensor:
 		self.sensing_range=sensing_range
 		self.localization=localization
 		self.active=True
-		
+		self.covering_targets = []
+
+
+
+
+
 

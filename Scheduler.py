@@ -3,7 +3,7 @@ import time
 
 class Scheduler:
 
-	def __init__(self,sensors_list,target_list,sensing_range, paint):
+	def __init__(self,sensors_list,target_list, paint):
 		"""
 		:param sensors_list:lista obiektów typu Sensor
 		:param sensing_range:
@@ -18,10 +18,10 @@ class Scheduler:
 		"""
 		self.sensor_list=sensors_list
 		self.target_list = target_list
-		self.sensor_range=sensing_range
 		self.duration = 0
 		self.paint = paint
 		self.percent_observed_targets = 0
+		self.compute_sensors_targets()
 	def get_sensor_list(self):
 		pass
 	def run(self):
@@ -40,5 +40,9 @@ class Scheduler:
 			self.sensor_list[i].active = False
 			i+=1
 
-	def sensor_target_covering(self,sensor,targets_list):
+	def compute_sensors_targets(self):
+		for	sensor in self.sensor_list:
+			for target in self.target_list:
+				if target.localization.distance_to(sensor.localization) < sensor.sensing_range:
+					sensor.covering_targets.append(target)
 
