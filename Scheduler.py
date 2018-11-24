@@ -1,5 +1,6 @@
 import time
 from Statistics import Statistic
+from Sensor import Sensor
 
 class Scheduler:
 
@@ -16,7 +17,7 @@ class Scheduler:
 		możesz też użyć tej funkcji np. w jakiejś głównej pętli symulacji
 		:param percent_observed_targets: procent obserwowanych celów
 		"""
-		self.sensor_list=sensors_list
+		self.sensor_list=sensors_list #type: list
 		self.target_list = target_list
 		self.duration = 0
 		self.paint = paint
@@ -51,3 +52,8 @@ class Scheduler:
 
 	def get_percent_observed_targets(self):
 		return self.statistics.get_percent_observed_targets()
+	
+	def set_sensor_state(self,sensor: Sensor,new_state: bool):
+		self.sensor_list[self.sensor_list.index(sensor)].active=new_state
+		self.statistics.update_state(self.sensor_list)
+

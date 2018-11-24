@@ -7,7 +7,7 @@ class Statistic:
         self.targets=targets
         self.sensors=[]
 
-    def get_simulation_time(self,):
+    def get_simulation_time(self):
         return time.time()-self.start_time
 
     def update_state(self,sensors):
