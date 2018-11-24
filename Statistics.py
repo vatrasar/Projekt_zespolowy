@@ -2,13 +2,13 @@ import time
 
 
 class Statistic:
-    def __init__(self,targets):
+    def __init__(self,targets:list,sensors:list):
         self.start_time=time.time()
         self.targets=targets
-        self.sensors=[]
+        self.sensors=sensors
 
     def get_simulation_time(self):
-        return time.time()-self.start_time
+        return round(time.time()-self.start_time,2)
 
     def update_state(self,sensors):
         self.sensors=sensors
@@ -22,8 +22,9 @@ class Statistic:
     def get_percent_observed_targets(self):
         targets_set=set()
         for sensor in self.sensors:
-            targets_set.update(sensor.covering_targets)
-        return 100*(len(targets_set)/len(self.targets)) #type: int
+            if(sensor.active==True):
+                targets_set.update(sensor.covering_targets)
+        return round(100*(len(targets_set)/len(self.targets)),2) #type: int
 
 
 

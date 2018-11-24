@@ -24,11 +24,13 @@ class Scheduler:
 		self.percent_observed_targets = 0
 		self.compute_sensors_targets()
 		self.sensor_range = sensor_range
-		self.statistics = Statistic(target_list)
+		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 
 	def get_sensor_list(self):
 		pass
 	def run(self):
+
+
 
 		#Tu algorytm symulacji
 		
@@ -41,8 +43,9 @@ class Scheduler:
 		i=0
 		while i < 1000:
 			self.paint.paint(self)
-			self.sensor_list[i].active = False
+			self.set_sensor_state(self.sensor_list[i],False)
 			i+=1
+
 
 	def compute_sensors_targets(self):
 		for	sensor in self.sensor_list:
@@ -52,7 +55,7 @@ class Scheduler:
 
 	def get_percent_observed_targets(self):
 		return self.statistics.get_percent_observed_targets()
-	
+
 	def set_sensor_state(self,sensor: Sensor,new_state: bool):
 		self.sensor_list[self.sensor_list.index(sensor)].active=new_state
 		self.statistics.update_state(self.sensor_list)

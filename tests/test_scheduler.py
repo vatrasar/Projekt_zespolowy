@@ -26,3 +26,4 @@ def test_set_sensor_state():
     a = Scheduler(sensor_list, targest_list, 2, 2)
     a.set_sensor_state(sen2,True)
     assert a.sensor_list[1].active==True
+

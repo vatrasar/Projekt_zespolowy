@@ -6,13 +6,13 @@ from Target import Target
 from Scheduler import Scheduler
 
 def test_get_active_sensors_number():
-    a=Statistics.Statistic((1,2))
+    a=Statistics.Statistic([1,2],[])
     a.sensors=[Sensor(2,2,2),Sensor(2,2,2),Sensor(2,2,2)]
     a.sensors[1].active=False
     assert a.get_active_sensors_number()==2
 
 def test_get_charged_sensors():
-    a = Statistics.Statistic((1, 2))
+    a = Statistics.Statistic([1, 2],[])
     a.sensors = [Sensor(0, 2, 2), Sensor(2, 2, 2), Sensor(2, 2, 2)]
     assert a.get_charged_sensors() == 2
 

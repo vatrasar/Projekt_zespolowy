@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QLabel, QGridLayout
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QHBoxLayout
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import Qt
+from Statistics import Statistic
 import sys
 import Scheduler
 import Sensor
@@ -120,7 +121,7 @@ class Parametr(QWidget):
 		self.draw_text(screen, "Liczba nieaktywnych sensorów "+str(self.amount_of_disactive_sensors), WIDTH/2, self.MENU_H*3)
 		self.draw_text(screen, "Liczba naładowanych sensorów "+str(self.amount_of_charged_sensors), WIDTH/2, self.MENU_H*4)
 		self.draw_text(screen, "Liczba rozładowanych sensorów "+str(self.amount_of_discharged_sensors), WIDTH/2, self.MENU_H*5)
-		self.draw_text(screen, "Czas życia sieci sensorowej "+str(self.duration), WIDTH/2, self.MENU_H*6)
+		self.draw_text(screen, "Czas życia sieci sensorowej "+str(self.scheduler.statistics.get_simulation_time()), WIDTH/2, self.MENU_H*6)
 
 		pygame.display.update()
 
@@ -219,7 +220,7 @@ class Parametr(QWidget):
 		self.draw_text(self.area, "Liczba nieaktywnych sensorów "+str(self.amount_of_disactive_sensors), self.map_width*self.scaled+int(self.MENU_W/2), self.MENU_H*3)
 		self.draw_text(self.area, "Liczba naładowanych sensorów "+str(self.amount_of_charged_sensors), self.map_width*self.scaled+int(self.MENU_W/2), self.MENU_H*4)
 		self.draw_text(self.area, "Liczba rozładowanych sensorów "+str(self.amount_of_discharged_sensors), self.map_width*self.scaled+int(self.MENU_W/2), self.MENU_H*5)
-		self.draw_text(self.area, "Obserwowane cele "+str(self.scheduler.percent_observed_targets)+"%", self.map_width*self.scaled+int(self.MENU_W/2), self.MENU_H*6)
+		self.draw_text(self.area, "Obserwowane cele "+str(self.scheduler.get_percent_observed_targets())+"%", self.map_width*self.scaled+int(self.MENU_W/2), self.MENU_H*6)
 
 		pygame.display.update()
 
