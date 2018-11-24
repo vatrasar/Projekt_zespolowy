@@ -20,10 +20,10 @@ class Statistic:
         return len(list(filter(lambda x:x.battery>0,self.sensors)))
 
     def get_percent_observed_targets(self):
-        targets_set=set(self.targets)
+        targets_set=set()
         for sensor in self.sensors:
-            targets_set.(sensor.covering_targets)
-        return 100*(len(targets_set)/len(self.targets)) #type: float
+            targets_set.update(sensor.covering_targets)
+        return 100*(len(targets_set)/len(self.targets)) #type: int
 
 
 
