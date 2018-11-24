@@ -1,5 +1,5 @@
 import time
-
+from Statistics import Statistic
 
 class Scheduler:
 
@@ -22,7 +22,9 @@ class Scheduler:
 		self.paint = paint
 		self.percent_observed_targets = 0
 		self.compute_sensors_targets()
-		self.sensor_range=sensor_range
+		self.sensor_range = sensor_range
+		self.statistics = Statistic(target_list)
+
 	def get_sensor_list(self):
 		pass
 	def run(self):
@@ -44,6 +46,8 @@ class Scheduler:
 	def compute_sensors_targets(self):
 		for	sensor in self.sensor_list:
 			for target in self.target_list:
-				if target.localization.distance_to(sensor.localization) < sensor.sensing_range:
+				if target.localization.distance_to(sensor.localization) <= sensor.sensing_range:
 					sensor.covering_targets.append(target)
 
+	def get_percent_observed_targets(self):
+		return self.statistics.get_percent_observed_targets()
