@@ -3,7 +3,7 @@ import time
 
 class Scheduler:
 
-	def __init__(self,sensors_list,target_list, paint):
+	def __init__(self,sensors_list,target_list,sensor_range, paint):
 		"""
 		:param sensors_list:lista obiektów typu Sensor
 		:param sensing_range:
@@ -22,6 +22,7 @@ class Scheduler:
 		self.paint = paint
 		self.percent_observed_targets = 0
 		self.compute_sensors_targets()
+		self.sensor_range=sensor_range
 	def get_sensor_list(self):
 		pass
 	def run(self):
