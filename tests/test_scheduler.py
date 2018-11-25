@@ -1,8 +1,10 @@
 import pytest
+import matplotlib.pyplot as plt
 from Scheduler import Scheduler
 from Sensor import Sensor
 from Point import Point
 from Target import Target
+import networkx as nx
 
 
 def test_compute_sensors_targets():
@@ -26,4 +28,33 @@ def test_set_sensor_state():
     a = Scheduler(sensor_list, targest_list, 2, 2)
     a.sensor_list[1].set_sensor_state(True)
     assert a.sensor_list[1].active==True
+
+
+def test_build_graph():
+    sen1 = Sensor(2, 2, Point(0, 0))
+    sen2 = Sensor(2, 2, Point(1, 0))
+    tar1 = Target(Point(1, 1))
+    tar2 = Target(Point(4, 4))
+    tar4 = Target(Point(5, 5))
+    tar3 = Target(Point(3, 0))
+    tar5 = Target(Point(0, 1))
+    tar6 = Target(Point(0, -1))
+    tar7 = Target(Point(2, 1))
+    sensor_list = [sen1, sen2]
+    targest_list = [tar1, tar2, tar3, tar4, tar5, tar6, tar7]
+    a = Scheduler(sensor_list, targest_list, 2, 2)
+    G = a.build_G_graph()
+    draw_graph(G, sensor_list)
+
+
+
+
+def draw_graph(G, sensor_list):
+    labels = {}
+    for sensor in sensor_list:
+        labels[sensor] = "sensor "+ str(sensor.localization)
+        for target in sensor.covering_targets:
+            labels[target]="target "+str(target.localization)
+    nx.draw(G, with_labels=True,labels=labels)
+    plt.show()
 

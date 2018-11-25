@@ -26,6 +26,5 @@ def test_get_percent_observed_targets():
     sensor_list = [sen1,sen2]
     targest_list = [tar1, tar2,tar3,tar4]
     a = Scheduler(sensor_list, targest_list, 2, 2)
-    a.statistics.update_state(a.sensor_list)
     assert a.get_percent_observed_targets() == 50
 

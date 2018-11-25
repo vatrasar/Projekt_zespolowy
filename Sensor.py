@@ -16,6 +16,17 @@ class Sensor:
 	def set_sensor_state(self,new_state:bool):
 		self.active=new_state
 
+	def get_key(self):
+		return (self.active,self.localization)
+
+	def __eq__(self, o) -> bool:
+		return self.localization==o.localizatio and self.active==o.active
+
+	def __hash__(self) -> int:
+		return hash(self.get_key())
+
+
+
 
 
 

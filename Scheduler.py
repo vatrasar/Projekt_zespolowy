@@ -66,12 +66,18 @@ class Scheduler:
 		k=self.get_critical_number(G)
 		G_list=self.make_k_copies_of_G(k,G)
 		flow_graph=self.join_G_list(G_list)
-		flow_graph=self.add_Y_nodes(flow_graph)
+		self.add_Y_nodes(flow_graph)
 
 		
 
 	def build_G_graph(self):
-		pass
+		G=nx.DiGraph()
+		G.add_nodes_from(self.sensor_list,type="sensor")
+		for sensor in self.sensor_list:
+			for target in sensor.covering_targets:
+				G.add_node(target,type="target")
+				G.add_edge(sensor,target,weight=1)
+		return G
 
 
 	def make_k_copies_of_G(self,k,G):
