@@ -31,6 +31,17 @@ def test_set_sensor_state():
 
 
 def test_build_graph():
+    a = build_scheduler()
+    G = a.build_G_graph()
+    assert G.nodes[a.sensor_list[0]]["type"]=="sensor"
+    draw_graph(G, a.sensor_list)
+
+def test_get_critical_number():
+    a=build_scheduler()
+    G = a.build_G_graph()
+    assert a.get_critical_number(G)==1
+
+def build_scheduler():
     sen1 = Sensor(2, 2, Point(0, 0))
     sen2 = Sensor(2, 2, Point(1, 0))
     tar1 = Target(Point(1, 1))
@@ -43,10 +54,7 @@ def test_build_graph():
     sensor_list = [sen1, sen2]
     targest_list = [tar1, tar2, tar3, tar4, tar5, tar6, tar7]
     a = Scheduler(sensor_list, targest_list, 2, 2)
-    G = a.build_G_graph()
-    draw_graph(G, sensor_list)
-
-
+    return a
 
 
 def draw_graph(G, sensor_list):

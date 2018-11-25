@@ -84,7 +84,16 @@ class Scheduler:
 		pass
 
 	def get_critical_number(self, G):
-		pass
+
+		target_nodes_list = list(filter(lambda x: x[1] == "target", G.nodes(data='type')))
+		min=None
+		for target_node in target_nodes_list:
+			degree= G.in_degree(target_node[0])
+			if min==None:
+				min=degree
+			if degree<min:
+				min=degree
+		return min
 
 	def join_G_list(self, G_list):
 		pass
