@@ -77,6 +77,11 @@ def test_compute_flow_value():
     a=build_scheduler()
     G=a.build_G_graph()
     draw_graph(G,a.sensor_list)
+    for sensor in a.sensor_list:
+        a.change_sensor_state(G,sensor,True)
+    for target in a.target_list:
+        if G.has_node(target):
+            print(str(target.localization)+":"+str(a.compute_flow_value(G,target)))
 
 
 
