@@ -1,6 +1,7 @@
 import time
 from Statistics import Statistic
 from Sensor import Sensor
+from Target import Target
 import networkx as nx
 
 
@@ -77,6 +78,7 @@ class Scheduler:
 			for target in sensor.covering_targets:
 				G.add_node(target,type="target")
 				G.add_edge(sensor,target,weight=1)
+
 		return G
 
 

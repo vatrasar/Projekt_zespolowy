@@ -1,4 +1,5 @@
-class Sensor:
+from graph import Node
+class Sensor(Node):
 
 	def __init__(self,battery,sensing_range,localization):
 		"""
@@ -8,6 +9,7 @@ class Sensor:
 		:param active: true gdy sensor aktywny,false gdy nieaktywny
 		:param covering_targets: lista targetów które są pokryte przez dany sensor
 		"""
+		super().__init__(0, 0)
 		self.battery = battery
 		self.sensing_range = sensing_range
 		self.localization = localization
@@ -17,10 +19,10 @@ class Sensor:
 		self.active=new_state
 
 	def get_key(self):
-		return (self.active,self.localization)
+		return (self.active,self.localization,super().get_key())
 
 	def __eq__(self, o) -> bool:
-		return self.localization==o.localizatio and self.active==o.active
+		return self.localization==o.localizatio and self.active==o.active and super().__eq__()
 
 	def __hash__(self) -> int:
 		return hash(self.get_key())
