@@ -13,6 +13,8 @@ class Sensor:
 		self.localization = localization
 		self.active = True
 		self.covering_targets = []
+	def set_sensor_state(self,new_state:bool):
+		self.active=new_state
 
 
 

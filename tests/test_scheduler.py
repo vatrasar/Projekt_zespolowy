@@ -24,6 +24,6 @@ def test_set_sensor_state():
     sensor_list = [sen1,sen2]
     targest_list = [tar1, tar2]
     a = Scheduler(sensor_list, targest_list, 2, 2)
-    a.set_sensor_state(sen2,True)
+    a.sensor_list[1].set_sensor_state(True)
     assert a.sensor_list[1].active==True
 

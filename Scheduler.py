@@ -20,7 +20,7 @@ class Scheduler:
 		możesz też użyć tej funkcji np. w jakiejś głównej pętli symulacji
 		:param percent_observed_targets: procent obserwowanych celów
 		"""
-		self.sensor_list=sensors_list #type: list
+		self.sensor_list=sensors_list #type: list[Sensor]
 		self.target_list = target_list
 		self.duration = 0
 		self.paint = paint
@@ -46,7 +46,7 @@ class Scheduler:
 		i=0
 		while i < 1000:
 			self.paint.paint(self)
-			self.set_sensor_state(self.sensor_list[i],False)
+			self.sensor_list[i].set_sensor_state(False)
 			i+=1
 
 
@@ -59,13 +59,10 @@ class Scheduler:
 	def get_percent_observed_targets(self):
 		return self.statistics.get_percent_observed_targets()
 
-	def set_sensor_state(self,sensor: Sensor,new_state: bool):
-		self.sensor_list[self.sensor_list.index(sensor)].active=new_state
-		self.statistics.update_state(self.sensor_list)
 
 
 	def build_flow_graph(self):
-		G=self.build_G_graph(self.sensor_list,self.target_list)
+		G=self.build_G_graph()
 		k=self.get_critical_number(G)
 		G_list=self.make_k_copies_of_G(k,G)
 		flow_graph=self.join_G_list(G_list)
