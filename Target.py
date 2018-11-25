@@ -7,8 +7,8 @@ class Target:
 	def __hash__(self):
 		return hash(self.get_key())
 
-	def __eq__(self, o: object) -> bool:
-		if object.localization==self.localization:
+	def __eq__(self, obj) -> bool:
+		if obj.localization==self.localization:
 			return True
 		else:
 			return False

@@ -1,6 +1,9 @@
 import time
 from Statistics import Statistic
 from Sensor import Sensor
+import networkx as nx
+
+
 
 class Scheduler:
 
@@ -59,4 +62,30 @@ class Scheduler:
 	def set_sensor_state(self,sensor: Sensor,new_state: bool):
 		self.sensor_list[self.sensor_list.index(sensor)].active=new_state
 		self.statistics.update_state(self.sensor_list)
+
+
+	def build_flow_graph(self):
+		G=self.build_G_graph(self.sensor_list,self.target_list)
+		k=self.get_critical_number(G)
+		G_list=self.make_k_copies_of_G(k,G)
+		flow_graph=self.join_G_list(G_list)
+		flow_graph=self.add_Y_nodes(flow_graph)
+
+		
+
+	def build_G_graph(self):
+		pass
+
+
+	def make_k_copies_of_G(self,k,G):
+		pass
+
+	def get_critical_number(self, G):
+		pass
+
+	def join_G_list(self, G_list):
+		pass
+
+	def add_Y_nodes(self, flow_graph):
+		pass
 
