@@ -4,7 +4,10 @@ from Scheduler import Scheduler
 from Sensor import Sensor
 from Point import Point
 from Target import Target
+from graph import Node
 import networkx as nx
+
+
 
 
 def test_compute_sensors_targets():
@@ -34,12 +37,16 @@ def test_build_graph():
     a = build_scheduler()
     G = a.build_G_graph()
     assert G.nodes[a.sensor_list[0]]["type"]=="sensor"
+    assert G.get_edge_data(a.sensor_list[0],a.sensor_list[0].covering_targets[0])["active"]==False
     draw_graph(G, a.sensor_list)
 
 def test_get_critical_number():
     a=build_scheduler()
     G = a.build_G_graph()
     assert a.get_critical_number(G)==1
+
+
+
 
 def build_scheduler():
     sen1 = Sensor(2, 2, Point(0, 0))
@@ -66,3 +73,23 @@ def draw_graph(G, sensor_list):
     nx.draw(G, with_labels=True,labels=labels)
     plt.show()
 
+def test_compute_flow_value():
+    a=build_scheduler()
+    G=a.build_G_graph()
+    draw_graph(G,a.sensor_list)
+
+
+
+
+def test_add_Y_nodes():
+    a=build_scheduler()
+    y1,y2=a.add_Y_nodes(a.build_G_graph())
+    assert (y1,y2)==(Node(1),Node(2))
+
+def test_change_sensor_state():
+    a = build_scheduler()
+    G = a.build_G_graph()
+    a.change_sensor_state(G,a.sensor_list[0],True)
+    assert G.get_edge_data(a.sensor_list[0],a.sensor_list[0].covering_targets[0])["active"]==True
+    a.change_sensor_state(G, a.sensor_list[0], False)
+    assert G.get_edge_data(a.sensor_list[0], a.sensor_list[0].covering_targets[0])["active"] == False

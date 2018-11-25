@@ -9,7 +9,7 @@ class Sensor(Node):
 		:param active: true gdy sensor aktywny,false gdy nieaktywny
 		:param covering_targets: lista targetów które są pokryte przez dany sensor
 		"""
-		super().__init__(0, 0)
+		super().__init__(0)
 		self.battery = battery
 		self.sensing_range = sensing_range
 		self.localization = localization
@@ -19,10 +19,10 @@ class Sensor(Node):
 		self.active=new_state
 
 	def get_key(self):
-		return (self.active,self.localization,super().get_key())
+		return (self.localization,super().get_key())
 
 	def __eq__(self, o) -> bool:
-		return self.localization==o.localizatio and self.active==o.active and super().__eq__()
+		return self.localization==o.localization
 
 	def __hash__(self) -> int:
 		return hash(self.get_key())

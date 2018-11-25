@@ -2,7 +2,9 @@ import time
 from Statistics import Statistic
 from Sensor import Sensor
 from Target import Target
+from graph import Node
 import networkx as nx
+import copy
 
 
 
@@ -29,12 +31,14 @@ class Scheduler:
 		self.compute_sensors_targets()
 		self.sensor_range = sensor_range
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
-
+		self.m=0
 	def get_sensor_list(self):
 		pass
 	def run(self):
 
 
+
+		covers_list=self.get_covers_list()
 
 		#Tu algorytm symulacji
 		
@@ -74,11 +78,17 @@ class Scheduler:
 	def build_G_graph(self):
 		G=nx.DiGraph()
 		G.add_nodes_from(self.sensor_list,type="sensor")
+		G.m=0 #maksymalna liczba targetów które mogą byc pokryte
+		added_targets=set()
 		for sensor in self.sensor_list:
+			sensor.active=False
 			for target in sensor.covering_targets:
-				G.add_node(target,type="target")
-				G.add_edge(sensor,target,weight=1)
-
+				set_size=len(added_targets)
+				added_targets.add(target)
+				if set_size!=len(added_targets): #żeby nie dodać dwa razy tego samego targeta
+					G.add_node(target,type="target")
+					G.m=G.m+1
+				G.add_edge(sensor,target,weight=1,active=False)
 		return G
 
 
@@ -86,7 +96,11 @@ class Scheduler:
 		pass
 
 	def get_critical_number(self, G):
+		"""
 
+		:param G: podstawowy graf składający się z Targetów sensorów oraz węzła X
+		:return: k. zwraca liczbe sensorów która pokrywa najmniej pokryty sensor
+		"""
 		target_nodes_list = list(filter(lambda x: x[1] == "target", G.nodes(data='type')))
 		min=None
 		for target_node in target_nodes_list:
@@ -100,6 +114,32 @@ class Scheduler:
 	def join_G_list(self, G_list):
 		pass
 
-	def add_Y_nodes(self, flow_graph):
-		pass
+	def add_Y_nodes(self, G:nx.DiGraph):
+		y1=Node(1)
+		y2=Node(2)
+		G.add_node(y1, type="Y1")
+		G.add_node(y2, type="Y2")
+		return y1, y2
+	def compute_flow_value(self,G:nx.DiGraph,node):
+		predecessors_list = G.predecessors(node)
+		flow_value=0
+		for predecessor in predecessors_list:
+			edge=G.get_edge_data(predecessor, node)
+			if edge['active']==True:
+				flow_value=flow_value+edge['weight']
+		return flow_value
+
+
+	def get_covers_list(self):
+		G=self.build_G_graph()
+		y1,y2=self.add_Y_nodes(G)
+		sensor_test_list=copy.deepcopy(self.sensor_list)
+
+	def change_sensor_state(self,G:nx.DiGraph,sensor:Sensor,new_state):
+		sensor.set_sensor_state(new_state)
+		for target in sensor.covering_targets:
+			atributes=G.get_edge_data(sensor,target)
+			atributes['active']=new_state
+
+
 
