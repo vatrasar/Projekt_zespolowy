@@ -82,13 +82,17 @@ def test_compute_flow_value():
     for target in a.target_list:
         if G.has_node(target):
             print(str(target.localization)+":"+str(a.compute_flow_value(G,target)))
-
+    y1,y2=a.add_Y_nodes(G)
+    assert a.compute_flow_value(G,y1)==3
+    assert a.compute_flow_value(G, y2) == 5
 
 
 
 def test_add_Y_nodes():
     a=build_scheduler()
-    y1,y2=a.add_Y_nodes(a.build_G_graph())
+    G=a.build_G_graph()
+    y1,y2=a.add_Y_nodes(G)
+    assert G.has_node(y1)
     assert (y1,y2)==(Node(1),Node(2))
 
 def test_change_sensor_state():

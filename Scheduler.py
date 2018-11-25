@@ -119,21 +119,36 @@ class Scheduler:
 		y2=Node(2)
 		G.add_node(y1, type="Y1")
 		G.add_node(y2, type="Y2")
+		for target in self.target_list:
+			if G.has_node(target):
+				G.add_edge(target,y1,weight=0)
+				G.add_edge(target,y2,weight=0)
 		return y1, y2
 	def compute_flow_value(self,G:nx.DiGraph,node):
 		predecessors_list = G.predecessors(node)
 		flow_value=0
-		for predecessor in predecessors_list:
-			edge=G.get_edge_data(predecessor, node)
-			if edge['active']==True:
-				flow_value=flow_value+edge['weight']
+		if G.node[node]["type"]=="Y1":
+			predecessors_list = G.predecessors(node)
+			for predecessor in predecessors_list:
+				flow_value=flow_value+self.compute_flow_value(G,predecessor)-1
+
+		elif G.node[node]["type"]=="Y2":
+			predecessors_list = G.predecessors(node)
+			for predecessor in predecessors_list:
+				flow_value =flow_value+1
+		else:
+			for predecessor in predecessors_list:
+				edge=G.get_edge_data(predecessor, node)
+				if edge['active']==True:
+					flow_value=flow_value+edge['weight']
 		return flow_value
 
 
 	def get_covers_list(self):
 		G=self.build_G_graph()
 		y1,y2=self.add_Y_nodes(G)
-		sensor_test_list=copy.deepcopy(self.sensor_list)
+
+		covers=self.get_best_cover(G,y1,y2,self.sensor_list)
 
 	def change_sensor_state(self,G:nx.DiGraph,sensor:Sensor,new_state):
 		sensor.set_sensor_state(new_state)
@@ -141,5 +156,7 @@ class Scheduler:
 			atributes=G.get_edge_data(sensor,target)
 			atributes['active']=new_state
 
-
-
+	def get_best_cover(self, G, y1, y2,sensor_list):
+		sensor_list_test=copy.deepcopy(self.sensor_list)
+		G_test=copy.deepcopy(G)
+		return G
