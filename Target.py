@@ -9,8 +9,8 @@ class Target(Node):
 		return (self.localization,super().get_key())
 
 	def __hash__(self) -> int:
-		return hash(self.get_key())
+		return self.get_key().__hash__()
 
 	def __eq__(self, obj) -> bool:
-		return obj.localization==self.localization and super().__eq__(obj)
+		return obj.localization==self.localization
 

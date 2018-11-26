@@ -12,7 +12,7 @@ class Node:
         return o.graph_number==self.graph_number
 
     def get_key(self):
-        return (self.graph_number)
+        return self.graph_number
 
     def __hash__(self) -> int:
-        return hash(self.get_key())
+        return (self.get_key(),2).__hash__()

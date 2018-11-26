@@ -170,19 +170,20 @@ class Scheduler:
 		best_cover=[]
 		for target in one_sensor_targets:
 			self.change_sensor_state(G_test,target.covering_sensors[0],True)
-			sensor_list_test.remove(target.covering_sensors[0])
+			if target.covering_sensors[0] in sensor_list_test:
+				sensor_list_test.remove(target.covering_sensors[0])
 		#sprawdzanie czy osiągnieto cel
 
 		if self.is_goal_achieved(G_test, y2):
 			flow_value = self.compute_flow_value(G_test, y1)
 			if self.min_Flow==None:
 				self.min_Flow=flow_value
-				return filter(lambda x:x not in sensor_list_test,self.sensor_list)
+				return list(filter(lambda x:x not in sensor_list_test,self.sensor_list))
 			elif self.min_Flow<=flow_value:
 				return []
 			else:
 				self.min_Flow=flow_value
-				return filter(lambda x:x not in sensor_list_test,self.sensor_list)
+				return list(filter(lambda x:x not in sensor_list_test,self.sensor_list))
 		#sprawdzanie kombinacji sensorów
 		for sensor in sensor_list_test:
 			self.change_sensor_state(G_test,sensor,True)
@@ -199,12 +200,12 @@ class Scheduler:
 				sensor_list_test.remove(sensor)
 				if self.min_Flow == None:
 					self.min_Flow = flow_value
-					return filter(lambda x: x not in sensor_list_test, self.sensor_list)
+					return list(filter(lambda x: x not in sensor_list_test, self.sensor_list))
 				elif self.min_Flow <= flow_value:
 					return []
 				else:
 					self.min_Flow = flow_value
-					return filter(lambda x: x not in sensor_list_test, self.sensor_list)
+					return list(filter(lambda x: x not in sensor_list_test, self.sensor_list))
 			else:
 				sensor_list_test.remove(sensor)
 				best_cover=self.get_best_cover(G_test, y1, y2, sensor_list_test)

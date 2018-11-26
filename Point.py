@@ -19,7 +19,9 @@ class Point:
 
 
 	def __hash__(self):
-		return hash((self.x,self.y))
+		return ((self.x,self.y)).__hash__()
+	def __eq__(self, other):
+		return other.x==self.x and other.y==self.y
 	def __init__(self, x=0.0, y=0.0):
 		self.x = x
 		self.y = y

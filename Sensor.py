@@ -25,7 +25,7 @@ class Sensor(Node):
 		return self.localization==o.localization
 
 	def __hash__(self) -> int:
-		return hash(self.get_key())
+		return self.get_key().__hash__()
 
 
 
