@@ -31,7 +31,8 @@ class Scheduler:
 		self.compute_sensors_targets()
 		self.sensor_range = sensor_range
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
-		self.m=0
+		self.min_Flow=None
+
 	def get_sensor_list(self):
 		pass
 	def run(self):
@@ -57,9 +58,11 @@ class Scheduler:
 
 	def compute_sensors_targets(self):
 		for	sensor in self.sensor_list:
+			target: Target
 			for target in self.target_list:
 				if target.localization.distance_to(sensor.localization) <= sensor.sensing_range:
 					sensor.covering_targets.append(target)
+					target.covering_sensors.append(sensor)
 
 	def get_percent_observed_targets(self):
 		return self.statistics.get_percent_observed_targets()
@@ -150,13 +153,96 @@ class Scheduler:
 
 		covers=self.get_best_cover(G,y1,y2,self.sensor_list)
 
-	def change_sensor_state(self,G:nx.DiGraph,sensor:Sensor,new_state):
+	def change_sensor_state(self,G:nx.DiGraph,sensor:Sensor,new_state:bool):
 		sensor.set_sensor_state(new_state)
 		for target in sensor.covering_targets:
+			boo1=G.has_node(target)
+			boo2=G.has_node(sensor)
 			atributes=G.get_edge_data(sensor,target)
 			atributes['active']=new_state
 
 	def get_best_cover(self, G, y1, y2,sensor_list):
 		sensor_list_test=copy.deepcopy(self.sensor_list)
 		G_test=copy.deepcopy(G)
-		return G
+		# same_cover_sensors=self.get_same_cover_sensors(sensor_list_test)
+		#znajdywanie targetów pokrytych przez jeden sensor
+		one_sensor_targets=self.get_one_sensor_targets()
+		best_cover=[]
+		for target in one_sensor_targets:
+			self.change_sensor_state(G_test,target.covering_sensors[0],True)
+			sensor_list_test.remove(target.covering_sensors[0])
+		#sprawdzanie czy osiągnieto cel
+
+		if self.is_goal_achieved(G_test, y2):
+			flow_value = self.compute_flow_value(G_test, y1)
+			if self.min_Flow==None:
+				self.min_Flow=flow_value
+				return filter(lambda x:x not in sensor_list_test,self.sensor_list)
+			elif self.min_Flow<=flow_value:
+				return []
+			else:
+				self.min_Flow=flow_value
+				return filter(lambda x:x not in sensor_list_test,self.sensor_list)
+		#sprawdzanie kombinacji sensorów
+		for sensor in sensor_list_test:
+			self.change_sensor_state(G_test,sensor,True)
+			flow_value=self.compute_flow_value(G_test,y1)
+			if self.is_goal_achieved(G_test, y2):
+				#sprawdzam wszystkie pozostałe sensory
+				self.change_sensor_state(G_test, sensor, False)
+				for another_sensor in sensor_list_test:
+					self.change_sensor_state(G_test, another_sensor, True)
+					if flow_value>self.compute_flow_value(G_test, y1):
+						flow_value=self.compute_flow_value(G_test, y1)
+						sensor=another_sensor
+					self.change_sensor_state(G_test, another_sensor, False)
+				sensor_list_test.remove(sensor)
+				if self.min_Flow == None:
+					self.min_Flow = flow_value
+					return filter(lambda x: x not in sensor_list_test, self.sensor_list)
+				elif self.min_Flow <= flow_value:
+					return []
+				else:
+					self.min_Flow = flow_value
+					return filter(lambda x: x not in sensor_list_test, self.sensor_list)
+			else:
+				sensor_list_test.remove(sensor)
+				best_cover=self.get_best_cover(G_test, y1, y2, sensor_list_test)
+		return best_cover
+
+
+
+
+
+	def is_goal_achieved(self, G_test, y2):
+		return self.compute_flow_value(G_test, y2) == G_test.m
+
+	def get_one_sensor_targets(self):
+		"""
+		zwraca targety pokryte przez tylko jeden sensor
+		:param sensor_list_test:
+		"""
+		return list(filter(lambda x:len(x.covering_sensors)==1,self.target_list))
+
+
+# def get_same_cover_sensors(self, sensor_list):
+	# 	"""
+	# 	zwraca sensory które pokrywają dokładnie te same targety
+	# 	:param sensor_list_test:
+	# 	"""
+	#
+	# 	#stworzenie listy targetów które pokrywają sensory z listy
+	# 	sensors_targets=set()
+	# 	for sensor in sensor_list:
+	# 		sensors_targets.update(sensor.covering_targets)
+	# 	same_cover_sensors={}
+	# 	for target in sensors_targets:
+	# 		covering_sensors=copy.deepcopy(target.covering_sensors) #type:list[Sensor]
+	# 		for i, sensor in enumerate(covering_sensors):
+	# 			for p,sen in enumerate(covering_sensors):
+	# 				if covering_sensors[i].covering_targets==covering_sensors[p].covering_targets:
+	# 					same_cover_sensors[covering_sensors[i].covering_targets]=same_cover_sensors.get(covering_sensors[i].covering_targets,set()).add(covering_sensors[p])
+	# 					same_cover_sensors[covering_sensors[i].covering_targets] = same_cover_sensors.get(covering_sensors[i].covering_targets, set()).add(covering_sensors[i])
+	#
+	# 	a=filter(labda,same_cover_sensors.values())
+	# 	return list(same_cover_sensors.values())

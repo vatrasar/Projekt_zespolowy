@@ -39,6 +39,7 @@ def test_build_graph():
     assert G.nodes[a.sensor_list[0]]["type"]=="sensor"
     assert G.get_edge_data(a.sensor_list[0],a.sensor_list[0].covering_targets[0])["active"]==False
     draw_graph(G, a.sensor_list)
+    assert G.has_node(Target(Point(1, 2)))
 
 def test_get_critical_number():
     a=build_scheduler()
@@ -85,6 +86,7 @@ def test_compute_flow_value():
     y1,y2=a.add_Y_nodes(G)
     assert a.compute_flow_value(G,y1)==3
     assert a.compute_flow_value(G, y2) == 5
+    assert G.node[y1]["type"] == "Y1"
 
 
 
@@ -102,3 +104,30 @@ def test_change_sensor_state():
     assert G.get_edge_data(a.sensor_list[0],a.sensor_list[0].covering_targets[0])["active"]==True
     a.change_sensor_state(G, a.sensor_list[0], False)
     assert G.get_edge_data(a.sensor_list[0], a.sensor_list[0].covering_targets[0])["active"] == False
+
+def test_get_one_sensor_targets():
+    sen1 = Sensor(2, 2, Point(0, 0))
+    sen2 = Sensor(2, 2, Point(1, 0))
+    sen3 = Sensor(2, 2, Point(5, 4))
+    tar1 = Target(Point(1, 1))
+    tar2 = Target(Point(4, 4))
+    tar4 = Target(Point(5, 5))
+    tar3 = Target(Point(3, 0))
+    tar5 = Target(Point(0, 1))
+    tar6 = Target(Point(0, -1))
+    tar7 = Target(Point(2, 1))
+    sensor_list = [sen1, sen2,sen3]
+    targest_list = [tar1, tar2, tar3, tar4, tar5, tar6, tar7]
+    a = Scheduler(sensor_list, targest_list, 2, 2)
+    result=a.get_one_sensor_targets()[0]
+    assert result==tar4 or result==tar2
+
+def test_get_best_cover():
+    lista1 = [1, 2, 3, 4]
+    lista2 = [1, 4]
+    lista3 = list(filter(lambda x: x not in lista2, lista1))
+    assert len(lista3) == 2
+    a=build_scheduler()
+    G=a.build_G_graph()
+    y1,y2=a.add_Y_nodes(G)
+    a.get_best_cover(G,y1,y2,a.sensor_list)

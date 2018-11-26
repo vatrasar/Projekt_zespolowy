@@ -2,6 +2,7 @@ from graph import Node
 class Target(Node):
 	def __init__(self, localization):
 		self.localization = localization
+		self.covering_sensors=[]
 		super().__init__(0)
 
 	def get_key(self):
@@ -11,5 +12,5 @@ class Target(Node):
 		return hash(self.get_key())
 
 	def __eq__(self, obj) -> bool:
-		return obj.localization==self.localization and super().__eq__()
+		return obj.localization==self.localization and super().__eq__(obj)
 

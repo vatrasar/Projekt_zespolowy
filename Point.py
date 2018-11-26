@@ -18,6 +18,8 @@ class Point:
 # rotate_about  -- rotate around another point
 
 
+	def __hash__(self):
+		return hash((self.x,self.y))
 	def __init__(self, x=0.0, y=0.0):
 		self.x = x
 		self.y = y
