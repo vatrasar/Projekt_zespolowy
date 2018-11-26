@@ -27,6 +27,9 @@ class Sensor(Node):
 	def __hash__(self) -> int:
 		return self.get_key().__hash__()
 
+	def is_covering_any_target(self):
+		return len(self.covering_targets)==0
+
 
 
 

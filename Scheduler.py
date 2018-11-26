@@ -28,18 +28,16 @@ class Scheduler:
 		self.duration = 0
 		self.paint = paint
 		self.percent_observed_targets = 0
-		self.compute_sensors_targets()
 		self.sensor_range = sensor_range
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
+		self.compute_sensors_targets()
 		self.min_Flow=None
+
 
 	def get_sensor_list(self):
 		pass
 	def run(self):
 
-
-
-		covers_list=self.get_covers_list()
 
 		#Tu algorytm symulacji
 		
@@ -49,14 +47,26 @@ class Scheduler:
 		#1000 wysokość, 1000 szerokość
 
 
-		i=0
-		while i < 1000:
-			self.paint.paint(self)
-			self.sensor_list[i].set_sensor_state(False)
-			i+=1
+		# i=0
+		# while i < 1000:
+		# 	self.paint.paint(self)
+		# 	self.sensor_list[i].set_sensor_state(False)
+		# 	i+=1
+		self.build_flow_graph()
+		covers=self.get_covers_list()
+		self.activate_covers_sensors(covers)
 
+
+
+	def activate_covers_sensors(self, cover):
+			for sensor in self.sensor_list:
+				if sensor in cover:
+					sensor.active = True
 
 	def compute_sensors_targets(self):
+		"""
+		oblicza które sensory pokrywają które targety. j
+		"""
 		for	sensor in self.sensor_list:
 			target: Target
 			for target in self.target_list:
@@ -147,11 +157,29 @@ class Scheduler:
 		return flow_value
 
 
-	def get_covers_list(self):
+	def get_covers_list(self)->list:
 		G=self.build_G_graph()
 		y1,y2=self.add_Y_nodes(G)
 
-		covers=self.get_best_cover(G,y1,y2,self.sensor_list)
+		covers=[]
+		sensor_list=copy.deepcopy(self.sensor_list) #type: list(Sensor)
+
+		#usuwamy z tymczasowej listy sensory które niczego nie pokrywają
+		sensor_list=list(filter(lambda x: x.is_covering_any_target(), sensor_list))
+		while(True):
+			new_cover=self.get_best_cover(G,y1,y2,sensor_list) #type: list
+			if len(new_cover)==0:
+				break
+			covers.append(new_cover)
+			#usuwamy z listy sensory które są już w jakimś pokryciu
+			sensor_list=list(filter(lambda x: x not in new_cover, sensor_list))
+			if len(sensor_list)==0:
+				break
+
+		return covers
+
+
+
 
 	def change_sensor_state(self,G:nx.DiGraph,sensor:Sensor,new_state:bool):
 		sensor.set_sensor_state(new_state)
@@ -162,7 +190,7 @@ class Scheduler:
 			atributes['active']=new_state
 
 	def get_best_cover(self, G, y1, y2,sensor_list):
-		sensor_list_test=copy.deepcopy(self.sensor_list)
+		sensor_list_test=copy.deepcopy(sensor_list)
 		G_test=copy.deepcopy(G)
 		# same_cover_sensors=self.get_same_cover_sensors(sensor_list_test)
 		#znajdywanie targetów pokrytych przez jeden sensor
@@ -178,12 +206,12 @@ class Scheduler:
 			flow_value = self.compute_flow_value(G_test, y1)
 			if self.min_Flow==None:
 				self.min_Flow=flow_value
-				return list(filter(lambda x:x not in sensor_list_test,self.sensor_list))
+				return list(filter(lambda x:x not in sensor_list_test,sensor_list))
 			elif self.min_Flow<=flow_value:
 				return []
 			else:
 				self.min_Flow=flow_value
-				return list(filter(lambda x:x not in sensor_list_test,self.sensor_list))
+				return list(filter(lambda x:x not in sensor_list_test,sensor_list))
 		#sprawdzanie kombinacji sensorów
 		for sensor in sensor_list_test:
 			self.change_sensor_state(G_test,sensor,True)
@@ -200,12 +228,12 @@ class Scheduler:
 				sensor_list_test.remove(sensor)
 				if self.min_Flow == None:
 					self.min_Flow = flow_value
-					return list(filter(lambda x: x not in sensor_list_test, self.sensor_list))
+					return list(filter(lambda x: x not in sensor_list_test, sensor_list))
 				elif self.min_Flow <= flow_value:
 					return []
 				else:
 					self.min_Flow = flow_value
-					return list(filter(lambda x: x not in sensor_list_test, self.sensor_list))
+					return list(filter(lambda x: x not in sensor_list_test, sensor_list))
 			else:
 				sensor_list_test.remove(sensor)
 				best_cover=self.get_best_cover(G_test, y1, y2, sensor_list_test)
@@ -223,7 +251,7 @@ class Scheduler:
 		zwraca targety pokryte przez tylko jeden sensor
 		:param sensor_list_test:
 		"""
-		return list(filter(lambda x:len(x.covering_sensors)==1,self.target_list))
+		return list(filter(lambda x:len(x.covering_sensors)==1 and x.covering_sensors[0].battery>0,self.target_list))
 
 
 # def get_same_cover_sensors(self, sensor_list):

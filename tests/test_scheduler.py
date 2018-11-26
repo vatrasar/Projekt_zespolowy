@@ -153,4 +153,14 @@ def test_get_best_cover():
         print(sor.localization)
     assert cover[1]==Sensor(2, 2, Point(4, 5)) or cover[0]==Sensor(2, 2, Point(4, 5))
     assert len(cover)==2
-
+def test_get_covers_list():
+    a = build_scheduler2()
+    lista1 = [Point(1, 2), Point(1, 3),Point(1, 4), Point(1, 5)]
+    lista2 = [Point(1, 2), Point(1, 3)]
+    lista3 = list(filter(lambda x: x not in lista2, lista1))
+    assert len(lista3) == 2
+def test_activate_covers_sensors():
+    a = build_scheduler2()
+    cover=[Sensor(2, 2, Point(0, 0)),Sensor(2, 2, Point(5, 4))]
+    a.activate_covers_sensors(cover)
+    assert a.sensor_list[0].active==True and a.sensor_list[2].active==True

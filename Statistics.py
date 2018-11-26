@@ -16,7 +16,7 @@ class Statistic:
     def get_active_sensors_number(self):
         return len(list(filter(lambda x:x.active,self.sensors)))
 
-    def get_charged_sensors(self):
+    def get_charged_sensors_count(self):
         return len(list(filter(lambda x:x.battery>0,self.sensors)))
 
     def get_percent_observed_targets(self):

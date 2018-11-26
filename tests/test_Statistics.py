@@ -14,7 +14,7 @@ def test_get_active_sensors_number():
 def test_get_charged_sensors():
     a = Statistics.Statistic([1, 2],[])
     a.sensors = [Sensor(0, 2, 2), Sensor(2, 2, 2), Sensor(2, 2, 2)]
-    assert a.get_charged_sensors() == 2
+    assert a.get_charged_sensors_count() == 2
 
 def test_get_percent_observed_targets():
     sen1 = Sensor(2, 2, Point(0, 0))
