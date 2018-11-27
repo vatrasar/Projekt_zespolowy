@@ -88,8 +88,16 @@ def draw_graph(G, sensor_list):
         labels[sensor] = "sensor "+ str(sensor.localization)
         for target in sensor.covering_targets:
             labels[target]="target "+str(target.localization)
-    nx.draw(G, with_labels=True,labels=labels)
+    colors = [G[u][v]['active'] for u, v in G.edges()]
+    print(colors)
+    colors=list(map(lambda x:transalte(x),colors))
+    nx.draw(G,edges=G.edges,edge_color=colors, with_labels=True,labels=labels)
     plt.show()
+def transalte(arg):
+    if arg:
+        return 'g'
+    else:
+        return 'r'
 
 def test_compute_flow_value():
     a=build_scheduler()
@@ -147,7 +155,7 @@ def test_get_best_cover():
     a=build_scheduler2()
     G=a.build_G_graph()
     y1,y2=a.add_Y_nodes(G)
-    cover=a.get_best_cover(G,y1,y2,a.sensor_list)
+    cover=a.get_best_cover(G,y1,y2,a.sensor_list,True)
     draw_graph(G,a.sensor_list)
     for sor in cover:
         print(sor.localization)
@@ -164,3 +172,17 @@ def test_activate_covers_sensors():
     cover=[Sensor(2, 2, Point(0, 0)),Sensor(2, 2, Point(5, 4))]
     a.activate_covers_sensors(cover)
     assert a.sensor_list[0].active==True and a.sensor_list[2].active==True
+def test_disable_cover():
+    a = build_scheduler2()
+    cover=[a.sensor_list[0],a.sensor_list[2]]
+    a.disable_cover(cover)
+    assert a.sensor_list[0].active==False and a.sensor_list[2].active==False
+
+def test_draw():
+    a = build_scheduler2()
+    G=a.build_G_graph()
+    a.change_sensor_state(G,a.sensor_list[0], True,)
+    draw_graph(G,a.sensor_list)
+def test_array():
+    lista=[1,2,3,4,5,6]
+    print(lista[1:])

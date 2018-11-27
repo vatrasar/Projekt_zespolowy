@@ -5,6 +5,7 @@ from Target import Target
 from graph import Node
 import networkx as nx
 import copy
+import matplotlib.pyplot as plt
 
 
 
@@ -29,10 +30,10 @@ class Scheduler:
 		self.paint = paint
 		self.percent_observed_targets = 0
 		self.sensor_range = sensor_range
-		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 		self.compute_sensors_targets()
+		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 		self.min_Flow=None
-
+		self.m=0
 
 	def get_sensor_list(self):
 		pass
@@ -52,16 +53,31 @@ class Scheduler:
 		# 	self.paint.paint(self)
 		# 	self.sensor_list[i].set_sensor_state(False)
 		# 	i+=1
-		self.build_flow_graph()
 		covers=self.get_covers_list()
-		self.activate_covers_sensors(covers)
+		base_battery_level=self.sensor_list[0].battery
+		for cover in covers:
+			cover=self.activate_covers_sensors(cover)
+			cover_time_start=time.time()
+			while(time.time()-cover_time_start<base_battery_level):
+				self.paint.paint(self)
+				for sensor in cover:
+					sensor.battery=sensor.battery-1
+			self.disable_cover(cover)
 
 
 
-	def activate_covers_sensors(self, cover):
-			for sensor in self.sensor_list:
-				if sensor in cover:
-					sensor.active = True
+
+	def activate_covers_sensors(self, cover)->list:
+		result_cover=[] #w zmiennej cover są ukryte sensory które są innymi obiektami niż te w sensor_list
+		#w result_cover chce mieć sensory które są w sensor_list
+		for sensor in self.sensor_list:
+			if sensor in cover:
+				sensor.active = True
+				result_cover.append(sensor)
+		return result_cover
+	def disable_cover(selfs,cover):
+		for sensor in cover:
+			sensor.active=False
 
 	def compute_sensors_targets(self):
 		"""
@@ -90,18 +106,22 @@ class Scheduler:
 
 	def build_G_graph(self):
 		G=nx.DiGraph()
-		G.add_nodes_from(self.sensor_list,type="sensor")
+		# G.add_nodes_from(self.sensor_list,type="sensor")
 		G.m=0 #maksymalna liczba targetów które mogą byc pokryte
 		added_targets=set()
+		G.ed =[]
 		for sensor in self.sensor_list:
 			sensor.active=False
+			if len(sensor.covering_targets)!=0:
+				G.add_node(sensor, type="sensor")
 			for target in sensor.covering_targets:
 				set_size=len(added_targets)
 				added_targets.add(target)
 				if set_size!=len(added_targets): #żeby nie dodać dwa razy tego samego targeta
 					G.add_node(target,type="target")
-					G.m=G.m+1
+					self.m=self.m+1
 				G.add_edge(sensor,target,weight=1,active=False)
+				G.ed.append((sensor,target))
 		return G
 
 
@@ -134,30 +154,39 @@ class Scheduler:
 		G.add_node(y2, type="Y2")
 		for target in self.target_list:
 			if G.has_node(target):
-				G.add_edge(target,y1,weight=0)
-				G.add_edge(target,y2,weight=0)
+				G.add_edge(target,y1,weight=0,active=True)
+				G.add_edge(target,y2,weight=0,active=True)
 		return y1, y2
 	def compute_flow_value(self,G:nx.DiGraph,node):
 		predecessors_list = G.predecessors(node)
 		flow_value=0
+		# labels = {node:"y"}
+		# nx.draw(G, with_labels=True, labels=labels)
+		# plt.show()
 		if G.node[node]["type"]=="Y1":
 			predecessors_list = G.predecessors(node)
 			for predecessor in predecessors_list:
+				flow=self.compute_flow_value(G, predecessor)
+				if flow==0:
+					continue
 				flow_value=flow_value+self.compute_flow_value(G,predecessor)-1
 
 		elif G.node[node]["type"]=="Y2":
 			predecessors_list = G.predecessors(node)
 			for predecessor in predecessors_list:
-				flow_value =flow_value+1
+				if self.compute_flow_value(G,predecessor)!=0:
+					flow_value =flow_value+1
 		else:
 			for predecessor in predecessors_list:
 				edge=G.get_edge_data(predecessor, node)
 				if edge['active']==True:
 					flow_value=flow_value+edge['weight']
+
 		return flow_value
 
 
 	def get_covers_list(self)->list:
+
 		G=self.build_G_graph()
 		y1,y2=self.add_Y_nodes(G)
 
@@ -166,8 +195,10 @@ class Scheduler:
 
 		#usuwamy z tymczasowej listy sensory które niczego nie pokrywają
 		sensor_list=list(filter(lambda x: x.is_covering_any_target(), sensor_list))
+
 		while(True):
-			new_cover=self.get_best_cover(G,y1,y2,sensor_list) #type: list
+			targets=self.get_avaiable_targets(sensor_list)
+			new_cover=self.get_best_cover(G,y1,y2,targets,sensor_list,sensor_list) #type: list
 			if len(new_cover)==0:
 				break
 			covers.append(new_cover)
@@ -175,6 +206,10 @@ class Scheduler:
 			sensor_list=list(filter(lambda x: x not in new_cover, sensor_list))
 			if len(sensor_list)==0:
 				break
+			self.min_Flow=None
+			print(str(self.m) + " m")
+			# self.m=self.m_future
+
 
 		return covers
 
@@ -184,67 +219,46 @@ class Scheduler:
 	def change_sensor_state(self,G:nx.DiGraph,sensor:Sensor,new_state:bool):
 		sensor.set_sensor_state(new_state)
 		for target in sensor.covering_targets:
-			boo1=G.has_node(target)
-			boo2=G.has_node(sensor)
 			atributes=G.get_edge_data(sensor,target)
 			atributes['active']=new_state
 
-	def get_best_cover(self, G, y1, y2,sensor_list):
-		sensor_list_test=copy.deepcopy(sensor_list)
-		G_test=copy.deepcopy(G)
-		# same_cover_sensors=self.get_same_cover_sensors(sensor_list_test)
-		#znajdywanie targetów pokrytych przez jeden sensor
-		one_sensor_targets=self.get_one_sensor_targets()
-		best_cover=[]
-		for target in one_sensor_targets:
-			self.change_sensor_state(G_test,target.covering_sensors[0],True)
-			if target.covering_sensors[0] in sensor_list_test:
-				sensor_list_test.remove(target.covering_sensors[0])
-		#sprawdzanie czy osiągnieto cel
+	def get_best_cover(self, G, y1, y2,targets,sensor_list,orginal_sensors_list):
 
-		if self.is_goal_achieved(G_test, y2):
-			flow_value = self.compute_flow_value(G_test, y1)
-			if self.min_Flow==None:
-				self.min_Flow=flow_value
-				return list(filter(lambda x:x not in sensor_list_test,sensor_list))
-			elif self.min_Flow<=flow_value:
+		G_test = copy.deepcopy(G)
+		sensor_list=copy.deepcopy(sensor_list)
+		best_cover=None
+		targets=list(targets)
+		if len(targets)!=0:
+			for sensor in targets[0].covering_sensors:
+				if sensor in sensor_list:
+					self.change_sensor_state(G_test,sensor,True)
+					flow_value = self.compute_flow_value(G_test, y1)
+					if self.min_Flow!=None and self.min_Flow<=flow_value:
+							continue
+					sensor_list.remove(sensor)
+					new_targets=targets[1:]
+					cover=self.get_best_cover(G_test,y1,y2,new_targets,sensor_list,orginal_sensors_list)
+
+					if len(cover)!=0:
+						best_cover=cover
+			if best_cover==None:
 				return []
 			else:
-				self.min_Flow=flow_value
-				return list(filter(lambda x:x not in sensor_list_test,sensor_list))
-		#sprawdzanie kombinacji sensorów
-		for sensor in sensor_list_test:
-			self.change_sensor_state(G_test,sensor,True)
-			flow_value=self.compute_flow_value(G_test,y1)
-			if self.is_goal_achieved(G_test, y2):
-				#sprawdzam wszystkie pozostałe sensory
-				self.change_sensor_state(G_test, sensor, False)
-				for another_sensor in sensor_list_test:
-					self.change_sensor_state(G_test, another_sensor, True)
-					if flow_value>self.compute_flow_value(G_test, y1):
-						flow_value=self.compute_flow_value(G_test, y1)
-						sensor=another_sensor
-					self.change_sensor_state(G_test, another_sensor, False)
-				sensor_list_test.remove(sensor)
-				if self.min_Flow == None:
-					self.min_Flow = flow_value
-					return list(filter(lambda x: x not in sensor_list_test, sensor_list))
-				elif self.min_Flow <= flow_value:
-					return []
-				else:
-					self.min_Flow = flow_value
-					return list(filter(lambda x: x not in sensor_list_test, sensor_list))
-			else:
-				sensor_list_test.remove(sensor)
-				best_cover=self.get_best_cover(G_test, y1, y2, sensor_list_test)
-		return best_cover
+				return best_cover
+		flow_value=self.compute_flow_value(G_test,y1)
+
+		if self.min_Flow==None:
+			self.min_Flow=flow_value
+		if self.min_Flow<flow_value:
+			return []
+		return list(filter(lambda x: x not in sensor_list, orginal_sensors_list))
 
 
 
 
 
 	def is_goal_achieved(self, G_test, y2):
-		return self.compute_flow_value(G_test, y2) == G_test.m
+		return self.compute_flow_value(G_test, y2) == self.m
 
 	def get_one_sensor_targets(self):
 		"""
@@ -253,6 +267,34 @@ class Scheduler:
 		"""
 		return list(filter(lambda x:len(x.covering_sensors)==1 and x.covering_sensors[0].battery>0,self.target_list))
 
+	def draw_graph(self,G, sensor_list):
+		labels = {}
+		for sensor in sensor_list:
+			if len(sensor.covering_targets)!=0:
+				labels[sensor] = "sensor " + str(sensor.localization)
+				for target in sensor.covering_targets:
+					labels[target] = "target " + str(target.localization)
+		G=copy.deepcopy(G)
+
+		colors = [G[u][v]['active'] for u, v in G.edges()]
+		print(colors)
+		colors = list(map(lambda x: self.transalte(x), colors))
+		nx.draw(G, edges=G.edges, edge_color=colors, with_labels=True, labels=labels)
+		plt.show()
+
+	def transalte(self,arg):
+		if arg:
+			return 'g'
+		else:
+			return 'r'
+
+	def get_avaiable_targets(self,sensor_list):
+		targets=set()
+		for sensor in sensor_list:
+			for target in sensor.covering_targets:
+				targets.add(target)
+
+		return targets
 
 # def get_same_cover_sensors(self, sensor_list):
 	# 	"""

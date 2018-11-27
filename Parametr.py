@@ -106,6 +106,7 @@ class Parametr(QWidget):
 		self.duration = scheduler.duration
 		self.statistics()
 
+
 	def statistics(self):
 		x = 100
 		y = 100
