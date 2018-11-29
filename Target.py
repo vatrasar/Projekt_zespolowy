@@ -1,12 +1,12 @@
-from graph import Node
-class Target(Node):
+
+class Target():
 	def __init__(self, localization):
 		self.localization = localization
 		self.covering_sensors=[]
-		super().__init__(0)
+
 
 	def get_key(self):
-		return (self.localization,super().get_key())
+		return self.localization
 
 	def __hash__(self) -> int:
 		return self.get_key().__hash__()
