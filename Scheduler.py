@@ -2,6 +2,7 @@ import time
 from Statistics import Statistic
 from Sensor import Sensor
 from Target import Target
+from Field import Field
 import copy
 
 
@@ -29,7 +30,7 @@ class Scheduler:
 		self.sensor_range = sensor_range
 		self.compute_sensors_targets()
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
-
+		self.fields_list=[] #type:list[Field]
 
 	def get_sensor_list(self):
 		pass
@@ -52,6 +53,9 @@ class Scheduler:
 
 
 
+
+	def build_fields_list(self):
+		pass
 
 
 	def activate_covers_sensors(self, cover)->list:
