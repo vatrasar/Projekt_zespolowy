@@ -23,7 +23,7 @@ class Scheduler:
 		:param percent_observed_targets: procent obserwowanych celów
 		"""
 		self.sensor_list=sensors_list #type: list[Sensor]
-		self.target_list = target_list
+		self.target_list = target_list #type: list[Target]
 		self.duration = 0
 		self.paint = paint
 		self.percent_observed_targets = 0
@@ -31,9 +31,10 @@ class Scheduler:
 		self.compute_sensors_targets()
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 		self.fields_list=[] #type:list[Field]
+		self.build_fields_list()
 
-	def get_sensor_list(self):
-		pass
+
+
 	def run(self):
 
 
@@ -55,7 +56,27 @@ class Scheduler:
 
 
 	def build_fields_list(self):
-		pass
+		for target in self.target_list:
+
+			field_exist=False
+			#jeśli pole dla targeta istnieje to dodaj target
+			for field in self.fields_list:
+				if field.sensors==target.covering_sensors:
+					field.targets.append(target)
+					field_exist=True
+			#jeśli pole dla targeta nie istnieje to utwórz nowe
+			if not field_exist:
+				self.add_field_for_target(target)
+
+	def add_field_for_target(self, target):
+		if len(target.covering_sensors)==0:
+			return
+
+		field = Field(target)
+		self.fields_list.append(field)
+		for sensor in self.sensor_list:
+			if sensor in field.sensors:
+				sensor.fields.append(field)
 
 
 	def activate_covers_sensors(self, cover)->list:

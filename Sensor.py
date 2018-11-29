@@ -1,3 +1,5 @@
+from Point import Point
+
 
 class Sensor():
 
@@ -12,9 +14,10 @@ class Sensor():
 
 		self.battery = battery
 		self.sensing_range = sensing_range
-		self.localization = localization
+		self.localization = localization #type: Point
 		self.active = True
 		self.covering_targets = []
+		self.fields=[] #type:list
 	def set_sensor_state(self,new_state:bool):
 		self.active=new_state
 
