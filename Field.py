@@ -10,6 +10,17 @@ class Field:
             self.sensors=target.covering_sensors #type: list
             self.targets.append(target) #type: list
 
+    def __eq__(self, o) -> bool:
+        return o.targets==self.targets and o.sensors==self.sensors
+
+    def get_key(self):
+        return (tuple(self.targets),tuple(self.sensors))
+    def __hash__(self) -> int:
+         return self.get_key().__hash__()
+
+
+
+
 
 
 
