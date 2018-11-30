@@ -29,10 +29,9 @@ class Scheduler:
 		self.percent_observed_targets = 0
 		self.sensor_range = sensor_range
 		self.compute_sensors_targets(self.sensor_list)
-		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 		self.fields_list=[] #type:list[Field]
 		self.build_fields_list(self.target_list,self.sensor_list)
-
+		self.statistics = Statistic(target_list, sensors_list)  # type: Statistic
 
 
 	def run(self):
@@ -51,17 +50,19 @@ class Scheduler:
 		# 	self.paint.paint(self)
 		# 	self.sensor_list[i].set_sensor_state(False)
 		# 	i+=1
-		self.disable_cover(self.sensor_list)
-		covers = self.get_covers_list()
 		base_battery_level = self.sensor_list[0].battery
+		self.disable_cover(self.sensor_list)
+		for sensor in self.sensor_list:
+			sensor.battery=base_battery_level
+		covers = self.get_covers_list()
+		self.statistics.start_time=time.time()
 		for cover in covers:
 			cover = self.activate_covers_sensors(cover)
 			cover_time_start = time.time()
 			while (time.time() - cover_time_start < base_battery_level):
 				self.paint.paint(self)
-				for sensor in cover:
-					sensor.battery = sensor.battery - 1
 			self.disable_cover(cover)
+
 
 		#pokazuje pozostałe naładowane sensory żeby było wiadomo że wypalone
 		#zostrało wszystko co możliwe
@@ -69,7 +70,7 @@ class Scheduler:
 			if sensor.battery>0:
 				sensor.active=True
 		self.paint.paint(self)
-		time.sleep(10)
+		time.sleep(5)
 
 
 
@@ -84,11 +85,15 @@ class Scheduler:
 
 		for target in target_list:
 			field_exist=False
+			target_sensors=list(filter(lambda x:x in sensors,target.covering_sensors))
 			#jeśli pole dla targeta istnieje to dodaj target
-			for field in self.fields_list:
+			if len(target_sensors)==0:
+				continue
+			for field in target_sensors[0].fields:
 				if field.sensors==target.covering_sensors:
 					field.targets.append(target)
 					field_exist=True
+
 			#jeśli pole dla targeta nie istnieje to utwórz nowe
 			if not field_exist:
 				for sensor in target.covering_sensors:
@@ -116,6 +121,7 @@ class Scheduler:
 	def disable_cover(selfs,cover):
 		for sensor in cover:
 			sensor.active=False
+			sensor.battery=0
 		return cover
 
 	def compute_sensors_targets(self,sensor_list):
