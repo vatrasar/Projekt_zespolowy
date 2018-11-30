@@ -46,11 +46,22 @@ class Scheduler:
 		#1000 wysokość, 1000 szerokość
 
 
-		i=0
-		while i < 1000:
-			self.paint.paint(self)
-			self.sensor_list[i].set_sensor_state(False)
-			i+=1
+		# i=0
+		# while i < 1000:
+		# 	self.paint.paint(self)
+		# 	self.sensor_list[i].set_sensor_state(False)
+		# 	i+=1
+		self.disable_cover(self.sensor_list)
+		covers = self.get_covers_list()
+		base_battery_level = self.sensor_list[0].battery
+		for cover in covers:
+			cover = self.activate_covers_sensors(cover)
+			cover_time_start = time.time()
+			while (time.time() - cover_time_start < base_battery_level):
+				self.paint.paint(self)
+				for sensor in cover:
+					sensor.battery = sensor.battery - 1
+			self.disable_cover(cover)
 
 
 
@@ -90,9 +101,14 @@ class Scheduler:
 
 
 	def activate_covers_sensors(self, cover)->list:
-		pass
+		cover=list(filter(lambda x:x in cover,self.sensor_list))
+		for sensor in cover:
+			sensor.active=True
+		return cover
 	def disable_cover(selfs,cover):
-		pass
+		for sensor in cover:
+			sensor.active=False
+		return cover
 
 	def compute_sensors_targets(self,sensor_list):
 		"""
@@ -134,9 +150,11 @@ class Scheduler:
 
 	def get_covers_list(self)->list:
 		covers=[]
-		sensors=copy.deepcopy(self.sensor_list)
+		sensors=self.sensor_list
 		while(len(sensors)!=0):
 			self.build_fields_list(self.get_avaiable_targets(sensors),sensors)
+			if len(self.fields_list)==0:
+				break
 			cover=self.get_best_cover(sensors)
 			covers.append(cover)
 			sensors=list(filter(lambda x:x not in cover,sensors))
