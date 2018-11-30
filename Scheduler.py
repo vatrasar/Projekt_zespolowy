@@ -31,7 +31,7 @@ class Scheduler:
 		self.compute_sensors_targets(self.sensor_list)
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 		self.fields_list=[] #type:list[Field]
-		self.build_fields_list(self.target_list)
+		self.build_fields_list(self.target_list,self.sensor_list)
 
 
 
@@ -55,9 +55,9 @@ class Scheduler:
 
 
 
-	def build_fields_list(self,target_list):
+	def build_fields_list(self,target_list,sensors):
 		#czyszczenie
-		self.field_list=[]
+		self.fields_list=[]
 
 		for target in target_list:
 			for sensor in target.covering_sensors:
@@ -72,16 +72,19 @@ class Scheduler:
 					field_exist=True
 			#jeśli pole dla targeta nie istnieje to utwórz nowe
 			if not field_exist:
-				self.add_field_for_target(target)
+				for sensor in target.covering_sensors:
+					if sensor in sensors:
+						self.add_field_for_target(target,sensors)
+						break
 
 
-	def add_field_for_target(self, target):
+	def add_field_for_target(self, target,sensors):
 		if len(target.covering_sensors)==0:
 			return
 
 		field = Field(target)
 		self.fields_list.append(field)
-		for sensor in self.sensor_list:
+		for sensor in sensors:
 			if sensor in field.sensors:
 				sensor.fields.append(field)
 
@@ -113,10 +116,10 @@ class Scheduler:
 
 
 
-	def get_critical_field(self):
+	def get_critical_field(self,fields_list):
 		min=len(self.fields_list[0].sensors)
-		critical_field=self.fields_list[0]
-		for field in self.fields_list:
+		critical_field=fields_list[0]
+		for field in fields_list:
 			if len(field.sensors)<min:
 				critical_field=field
 				min=len(field.sensors)
@@ -133,27 +136,37 @@ class Scheduler:
 		covers=[]
 		sensors=copy.deepcopy(self.sensor_list)
 		while(len(sensors)!=0):
-			self.build_fields_list(self.get_avaiable_targets(sensors))
+			self.build_fields_list(self.get_avaiable_targets(sensors),sensors)
 			cover=self.get_best_cover(sensors)
 			covers.append(cover)
 			sensors=list(filter(lambda x:x not in cover,sensors))
-
+		return covers
 
 
 	def get_best_cover(self,sensors):
 		cover=[]
+		fields_list = copy.deepcopy(self.fields_list)
+		sensor_list = copy.deepcopy(sensors)
 		while(not(self.goal_achieved(cover))):
-			critical_field=self.get_critical_field()
-			fields_list=copy.deepcopy(self.fields_list)
-			sensor_list=copy.deepcopy(sensors)
-			while len(fields_list)!=0:
-				max=None
-				best_sensor=self.get_best_sensor()
+			critical_field=self.get_critical_field(fields_list)
+			best_sensor=self.get_best_sensor(critical_field,sensor_list,cover,fields_list)
+			self.best_sensor_to_cover(best_sensor, cover, fields_list, sensor_list)
+		return cover
 
 
-
-
-
+	def best_sensor_to_cover(self, best_sensor, cover, fields_list, sensor_list):
+		"""
+		dodaje najlepszy sensor do covera
+		:param best_sensor:
+		:param cover:
+		:param fields_list:
+		:param sensor_list:
+		"""
+		cover.append(best_sensor)
+		for field in best_sensor.fields:
+			if field in fields_list:
+				fields_list.remove(field)
+		sensor_list.remove(best_sensor)
 
 	def get_one_sensor_targets(self):
 		"""
@@ -180,9 +193,21 @@ class Scheduler:
 				covered_fields.add(field)
 		return len(covered_fields)==len(self.fields_list)
 
-	def get_best_sensor(self,critical_field,sensors):
-		for sensor in list(filter(lambda x: critical_field in x.fields, sensors)):
-			sensor_value=self.get_sensor_value()
+	def get_best_sensor(self,critical_field,sensors,cover,uncovered_fields)->Sensor:
+
+		available_sensors=list(filter(lambda x: critical_field in x.fields, sensors))
+
+		max_value = self.get_sensor_value(available_sensors[0],sensors,uncovered_fields,critical_field,cover)
+		max_sensor = available_sensors[0]
+		available_sensors.remove(max_sensor)
+		for sensor in available_sensors:
+			sensor_value=self.get_sensor_value(sensor,sensors,uncovered_fields,critical_field,cover)
+			if sensor_value>max_value:
+				max_sensor=sensor
+				max_value=sensor_value
+
+		return max_sensor
+
 
 	def get_sensor_value(self,sensor,sensors,uncovered_fields,critical_field,cover):
 		value=0
@@ -193,6 +218,7 @@ class Scheduler:
 				else:
 					sensors_from_cover_number=self.sensors_from_cover_number(field,cover)
 					value=value-len(field.targets)-sensors_from_cover_number+len(field.sensors)
+		return value
 
 	def sensors_from_cover_number(self, field,cover):
 		number=0

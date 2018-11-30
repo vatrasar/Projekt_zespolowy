@@ -54,7 +54,7 @@ def test_goal_achieved():
 def test_get_critical_field():
     sen=Sensor(2, 2, Point(8, 7))
     a = build_scheduler(sen=[Sensor(2, 2, Point(3, 0)),sen], tar=[])
-    field=a.get_critical_field()
+    field=a.get_critical_field(a.fields_list)
     assert field==sen.fields[0]
 
 def test_sensors_from_cover_number():
@@ -65,7 +65,15 @@ def test_sensors_from_cover_number():
 
     number=a.sensors_from_cover_number(a.fields_list[0],[sen1,sen2,sen3])
     assert number==2
-
+def test_get_best_sensor():
+    a = build_scheduler([], [])
+    sensor=a.get_best_sensor(a.fields_list[0],a.sensor_list,[],a.fields_list)
+    assert sensor==Sensor(2, 2, Point(1, 0))
+def test_get_covers_list():
+    sen1=Sensor(2, 2, Point(8, 9))
+    a=build_scheduler([sen1],[])
+    covers=a.get_covers_list()
+    assert len(covers)==2
 
 
 
