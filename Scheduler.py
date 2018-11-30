@@ -235,7 +235,7 @@ class Scheduler:
 					value=value+len(field.targets)- (len(field.sensors)-1)
 				else:
 					sensors_from_cover_number=self.sensors_from_cover_number(field,cover)
-					value=value-len(field.targets)-sensors_from_cover_number+len(field.sensors)
+					value=value-len(self.sensor_list)-sensors_from_cover_number+len(field.sensors)
 		return value
 
 	def sensors_from_cover_number(self, field,cover):
