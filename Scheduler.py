@@ -63,6 +63,14 @@ class Scheduler:
 					sensor.battery = sensor.battery - 1
 			self.disable_cover(cover)
 
+		#pokazuje pozostałe naładowane sensory żeby było wiadomo że wypalone
+		#zostrało wszystko co możliwe
+		for sensor in self.sensor_list:
+			if sensor.battery>0:
+				sensor.active=True
+		self.paint.paint(self)
+		time.sleep(10)
+
 
 
 
@@ -163,8 +171,8 @@ class Scheduler:
 
 	def get_best_cover(self,sensors):
 		cover=[]
-		fields_list = copy.deepcopy(self.fields_list)
-		sensor_list = copy.deepcopy(sensors)
+		fields_list =self.fields_list.copy()
+		sensor_list = sensors.copy()
 		while(not(self.goal_achieved(cover))):
 			critical_field=self.get_critical_field(fields_list)
 			best_sensor=self.get_best_sensor(critical_field,sensor_list,cover,fields_list)
