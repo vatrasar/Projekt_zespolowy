@@ -34,6 +34,7 @@ class Scheduler:
 		self.statistics = Statistic(target_list,sensors_list) #type: Statistic
 		self.min_Flow=None
 		self.m=0
+		self.q=70
 
 	def get_sensor_list(self):
 		pass
@@ -201,6 +202,7 @@ class Scheduler:
 			new_cover=self.get_best_cover(G,y1,y2,targets,sensor_list,sensor_list) #type: list
 			if len(new_cover)==0:
 				break
+			self.optimization(new_cover)
 			covers.append(new_cover)
 			#usuwamy z listy sensory które są już w jakimś pokryciu
 			sensor_list=list(filter(lambda x: x not in new_cover, sensor_list))
@@ -208,6 +210,7 @@ class Scheduler:
 				break
 			self.min_Flow=None
 			print(str(self.m) + " m")
+			print("cover "+str(len(covers)))
 			# self.m=self.m_future
 
 
@@ -317,3 +320,36 @@ class Scheduler:
 	#
 	# 	a=filter(labda,same_cover_sensors.values())
 	# 	return list(same_cover_sensors.values())
+
+	def optimization(self, cover):
+
+		#usuwamy maksymalną liczbe sensorów by procent pokrycia był większy od q
+
+		while(self.get_cover_procent(cover)>self.q):
+			max_value=0
+			max_sensor=None
+			for sensor in cover:
+				test_cover = cover.copy()
+				test_sensor=sensor
+				test_cover.remove(sensor)
+				value=self.get_cover_procent(test_cover)
+				if value>max_value:
+					max_value=value
+					max_sensor=test_sensor
+			if max_value>=self.q:
+				cover.remove(max_sensor)
+
+			else:
+				break
+
+
+
+
+
+	def get_cover_targets(self,cover):
+		targets=set()
+		for sensor in cover:
+			targets.update(sensor.covering_targets)
+		return list(targets)
+	def get_cover_procent(self,cover):
+		return len(self.get_cover_targets(cover))/len(self.target_list)*100
