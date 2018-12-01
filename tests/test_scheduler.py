@@ -74,6 +74,9 @@ def test_get_covers_list():
     a=build_scheduler([sen1],[])
     covers=a.get_covers_list()
     assert len(covers)==2
+def test_get_cover_procent():
+    a=build_scheduler([],[])
+    assert a.get_cover_procent([a.sensor_list[0]])==50
 
 
 

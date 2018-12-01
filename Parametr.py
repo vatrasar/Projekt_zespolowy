@@ -189,8 +189,8 @@ class Parametr(QWidget):
 			range_of_sensor, Point.Point(randrange(range_of_sensor, 
 			map_width-range_of_sensor),randrange(range_of_sensor, map_high-range_of_sensor))))
 		for x in range(0, amount_of_targets):
-			self.target_list.append(Target.Target(Point.Point(randrange(map_width),
-			randrange(map_high))))
+			self.target_list.append(Target.Target(Point.Point(randrange(map_width-2*0.1*map_width)+0.1*map_width,
+			randrange(map_high-2*0.1*map_high)+0.1*map_width)))
 
 	def paint(self, scheduler):
 		self.amount_of_active_sensors = 0

@@ -32,7 +32,7 @@ class Scheduler:
 		self.fields_list=[] #type:list[Field]
 		self.build_fields_list(self.target_list,self.sensor_list)
 		self.statistics = Statistic(target_list, sensors_list)  # type: Statistic
-
+		self.q=90
 
 	def run(self):
 
@@ -40,9 +40,9 @@ class Scheduler:
 		#Tu algorytm symulacji
 		
 		#Przykładowy kod prezentujący interface, musisz podać co najmniej
-		#1000 sensorów. Przykładowe dane do przetestowania tego kodu
-		#1000 sensorów, 1000 targetów, 10 zasięg, 10 bateria, 
-		#1000 wysokość, 1000 szerokość
+		#1000 sensorów(A podałem mniej i było ok). Przykładowe dane do przetestowania tego kodu
+		#400 sensorów, 100 targetów, 20 zasięg, 2 bateria,
+		#100 wysokość, 100 szerokość
 
 
 		# i=0
@@ -58,19 +58,22 @@ class Scheduler:
 		self.statistics.start_time=time.time()
 		for cover in covers:
 			cover = self.activate_covers_sensors(cover)
+			if self.statistics.get_percent_observed_targets()<self.q:
+				break
 			cover_time_start = time.time()
 			while (time.time() - cover_time_start < base_battery_level):
 				self.paint.paint(self)
 			self.disable_cover(cover)
 
 
+
 		#pokazuje pozostałe naładowane sensory żeby było wiadomo że wypalone
 		#zostrało wszystko co możliwe
-		for sensor in self.sensor_list:
-			if sensor.battery>0:
-				sensor.active=True
-		self.paint.paint(self)
-		time.sleep(20)
+		# for sensor in self.sensor_list:
+		# 	if sensor.battery>0:
+		# 		sensor.active=True
+		# self.paint.paint(self)
+		# time.sleep(10)
 
 
 
@@ -170,8 +173,13 @@ class Scheduler:
 			if len(self.fields_list)==0:
 				break
 			cover=self.get_best_cover(sensors)
+			procent=self.get_cover_procent(cover)
+			self.clean_cover(cover)
+			if procent<self.q:
+				return covers
 			covers.append(cover)
 			sensors=list(filter(lambda x:x not in cover,sensors))
+			print("cover "+str(len(covers)))
 		return covers
 
 
@@ -184,6 +192,7 @@ class Scheduler:
 			best_sensor=self.get_best_sensor(critical_field,sensor_list,cover,fields_list)
 			self.best_sensor_to_cover(best_sensor, cover, fields_list, sensor_list)
 		self.optimization(cover)
+		procent=self.get_cover_procent(cover)
 		return cover
 
 
@@ -261,6 +270,7 @@ class Scheduler:
 		return number
 
 	def optimization(self, cover):
+		#usuwa sensory ktorych wyłączenie nie zmienia poziomu pokrycia
 		fields_list=set()
 		for sensor in cover:
 			fields_list.update(sensor.fields)
@@ -272,8 +282,40 @@ class Scheduler:
 					fields_list.update(sensor2.fields)
 			if value==len(fields_list):
 				cover.remove(sensor)
-				print("us")
+		#usuwamy maksymalną liczbe sensorów by procent pokrycia był większy od q
 
+		while(self.get_cover_procent(cover)>self.q):
+			max_value=0
+			max_sensor=None
+			for sensor in cover:
+				test_cover = cover.copy()
+				test_sensor=sensor
+				test_cover.remove(sensor)
+				value=self.get_cover_procent(test_cover)
+				if value>max_value:
+					max_value=value
+					max_sensor=test_sensor
+			if max_value>=self.q:
+				cover.remove(max_sensor)
+
+			else:
+				break
+
+
+
+
+
+	def get_cover_targets(self,cover):
+		targets=set()
+		for sensor in cover:
+			targets.update(sensor.covering_targets)
+		return list(targets)
+	def get_cover_procent(self,cover):
+		return len(self.get_cover_targets(cover))/len(self.target_list)*100
+
+	def clean_cover(self, cover):
+		for sensor in cover:
+			sensor.fields=[]
 
 
 
