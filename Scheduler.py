@@ -70,7 +70,7 @@ class Scheduler:
 			if sensor.battery>0:
 				sensor.active=True
 		self.paint.paint(self)
-		time.sleep(5)
+		time.sleep(20)
 
 
 
@@ -183,6 +183,7 @@ class Scheduler:
 			critical_field=self.get_critical_field(fields_list)
 			best_sensor=self.get_best_sensor(critical_field,sensor_list,cover,fields_list)
 			self.best_sensor_to_cover(best_sensor, cover, fields_list, sensor_list)
+		self.optimization(cover)
 		return cover
 
 
@@ -258,6 +259,22 @@ class Scheduler:
 			if field in sensor.fields:
 				number=number+1
 		return number
+
+	def optimization(self, cover):
+		fields_list=set()
+		for sensor in cover:
+			fields_list.update(sensor.fields)
+		value=len(fields_list)
+		for sensor in cover:
+			fields_list = set()
+			for sensor2 in cover:
+				if sensor!=sensor2:
+					fields_list.update(sensor2.fields)
+			if value==len(fields_list):
+				cover.remove(sensor)
+				print("us")
+
+
 
 
 
