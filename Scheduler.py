@@ -55,6 +55,9 @@ class Scheduler:
 		for sensor in self.sensor_list:
 			sensor.battery=base_battery_level
 		covers = self.get_covers_list()
+		if len(covers)==0:
+			print("zbyt mało sensorów by osiągnąć 90% pokrycia tych celów")
+			self.paint.paint(self)
 		self.statistics.start_time=time.time()
 		for cover in covers:
 			cover = self.activate_covers_sensors(cover)
