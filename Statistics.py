@@ -4,7 +4,7 @@ import time
 class Statistic:
     def __init__(self,targets:list,sensors:list):
         self.start_time=time.time()
-        self.targets=targets
+        self.targets_number=len(targets)
         self.sensors=sensors
 
     def get_simulation_time(self):
@@ -24,7 +24,7 @@ class Statistic:
         for sensor in self.sensors:
             if(sensor.active==True):
                 targets_set.update(sensor.covering_targets)
-        return round(100*(len(targets_set)/len(self.targets)),2) #type: int
+        return round(100*(len(targets_set)/self.targets_number),2) #type: int
 
 
 

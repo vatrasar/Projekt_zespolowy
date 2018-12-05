@@ -8,7 +8,9 @@ class Field:
             self.sensors=[] #type: list
         else:
             self.sensors=target.covering_sensors #type: list
-            self.targets.append(target) #type: list
+            self.targets.append(target) #type: list.
+            for sensor in self.sensors:
+                sensor.fields.append(self)
 
     def __eq__(self, o) -> bool:
         return o.targets==self.targets and o.sensors==self.sensors
