@@ -7,8 +7,11 @@ class Statistic:
         self.targets_number=len(targets)
         self.sensors=sensors
 
+
     def get_simulation_time(self):
-        return round(time.time()-self.start_time,2)
+        return round(self.stop-self.start_time,2)
+    def stop_time(self):
+        self.stop=time.time()
 
     def update_state(self,sensors):
         self.sensors=sensors

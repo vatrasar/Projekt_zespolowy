@@ -23,6 +23,7 @@ class Scheduler:
 		możesz też użyć tej funkcji np. w jakiejś głównej pętli symulacji
 		:param percent_observed_targets: procent obserwowanych celów
 		"""
+		self.start=time.time()
 		self.sensor_list=sensors_list #type: list[Sensor]
 		self.target_list = target_list #type: list[Target]
 		self.statistics = Statistic(target_list, sensors_list)  # type: Statistic
@@ -65,7 +66,7 @@ class Scheduler:
 		self.disable_cover(self.sensor_list)
 		for sensor in self.sensor_list:
 			sensor.battery=base_battery_level
-
+		print("czas obliczeń"+str(time.time()-self.start))
 		self.statistics.start_time=time.time()
 		for cover in covers:
 			cover = self.activate_covers_sensors(cover)
@@ -78,7 +79,7 @@ class Scheduler:
 			for sensor in cover:
 				sensor.battery=0
 
-
+		self.statistics.stop_time()
 		#pokazuje pozostałe naładowane sensory żeby było wiadomo że wypalone
 		#zostrało wszystko co możliwe
 		# for sensor in self.sensor_list:
