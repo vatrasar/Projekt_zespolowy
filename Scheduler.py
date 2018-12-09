@@ -42,8 +42,11 @@ class Scheduler:
 		self.q=90
 
 	def run(self):
-
-
+		"""
+		odpowiada za egzekucje całej symulacji. uruchamia metody obliczające
+		pokrycia a nastepnie przeporwadza symulacje, wywołuje funkcje
+		odpowiedzialne za wyświetlanie wszytskiego na ekranie
+		"""
 		#Tu algorytm symulacji
 		
 		#Przykładowy kod prezentujący interface, musisz podać co najmniej
@@ -92,6 +95,10 @@ class Scheduler:
 
 
 	def build_fields_list(self,target_list):
+		"""
+		tworzy liste pól na podstwie listy sensorów i targetów
+		:param target_list:
+		"""
 		#czyszczenie
 		self.fields_list=[]
 		for sensor in self.sensor_list:
@@ -116,12 +123,22 @@ class Scheduler:
 				self.add_to_new_field(target)
 
 	def add_to_new_field(self, target):
+		"""
+		tworzy nowe pole i dodaje do niego target
+		:param target:
+		"""
 		for sensor in target.covering_sensors:
 			if sensor.active == True:
 				self.add_field_for_target(target)
 				break
 
 	def add_to_exist_field(self, target, target_fields):
+		"""
+		dodaje target do pola które już istnieje
+		:param target:
+		:param target_fields:
+		:return:
+		"""
 		field_exist=False
 		for field in target_fields:
 			if field.sensors == target.covering_sensors:
@@ -147,18 +164,30 @@ class Scheduler:
 		self.fields_list.append(field)
 
 	def activate_covers_sensors(self, cover)->list:
+		"""
+		Zmienia wartość atrybutu active na True we wszystkich
+		sensorach nalezących do listy cover
+		:param cover:
+		:return:
+		"""
 		cover=list(filter(lambda x:x in cover,self.sensor_list))
 		for sensor in cover:
 			sensor.active=True
 		return cover
 	def disable_cover(selfs,cover):
+		"""
+		Zmienia wartość atrybutu active na False we wszystkich
+		sensorach nalezących do listy cover
+		:param cover:
+		:return:
+		"""
 		for sensor in cover:
 			sensor.active=False
 		return cover
 
 	def compute_sensors_targets(self,sensor_list):
 		"""
-		oblicza które sensory pokrywają które targety. j
+		przypisuje sensory do targetów i targety do sensorów
 		"""
 		for sensor in sensor_list:
 			sensor.covering_targets=[]
@@ -172,6 +201,10 @@ class Scheduler:
 					target.covering_sensors.append(sensor)
 
 	def get_percent_observed_targets(self):
+		"""
+		zwraca procent obserwowanych celów
+		:return:
+		"""
 		return self.statistics.get_percent_observed_targets()
 
 
@@ -179,6 +212,11 @@ class Scheduler:
 
 
 	def get_critical_field(self,fields_list):
+		"""
+		zwraca element krytyczny
+		:param fields_list:
+		:return:
+		"""
 		min=len(self.fields_list[0].sensors)
 		critical_field=fields_list[0]
 		for field in fields_list:
@@ -195,6 +233,11 @@ class Scheduler:
 
 
 	def get_covers_list(self)->list:
+		"""
+		Zwraca liste pokryc dla senosorów, targetów i pól znajdujacych się obiekcie
+		Scheduler
+		:return:
+		"""
 		covers=[]
 
 		sensors=self.sensor_list
@@ -228,12 +271,18 @@ class Scheduler:
 
 
 	def get_best_cover(self,sensors):
+		"""
+		Zwraca najbardziej opytmalny podzbiór sensorów z listy sensors.
+		Podzbiór jest tym bardziej optymalny im bliżej mu do pkrywania q procent targetów
+		:param sensors:
+		:return:
+		"""
 		cover=[]
 		fields_list =self.fields_list.copy()
 		sensor_list = sensors.copy()
 		while(len(fields_list)!=0):
 			critical_field=self.get_critical_field(fields_list)
-			best_sensor=self.get_best_sensor(critical_field,sensor_list,cover,fields_list)
+			best_sensor=self.get_best_sensor(critical_field,cover,fields_list)
 			self.best_sensor_to_cover(best_sensor, cover, fields_list, sensor_list)
 		self.optimization(cover)
 		procent=self.get_cover_procent(cover)
@@ -265,6 +314,10 @@ class Scheduler:
 
 
 	def get_avaiable_targets(self):
+		"""
+		zwraca liste targetów które są pokryte przez conajmniej jeden aktywny sensor
+		:return:
+		"""
 		targets=[]
 		# self.compute_sensors_targets(sensor_list)
 		for target in self.target_list:
@@ -275,15 +328,19 @@ class Scheduler:
 					break
 		return targets
 
-	def goal_achieved(self,cover):
-		covered_fields=set()
-		for sensor in cover:
-			for field in sensor.fields:
-				covered_fields.add(field)
-		return len(covered_fields)==len(self.fields_list)
 
-	def get_best_sensor(self,critical_field,sensors,cover,uncovered_fields)->Sensor:
 
+	def get_best_sensor(self,critical_field,cover,uncovered_fields)->Sensor:
+		"""
+		zwraca najlepszy sensor pkrywający element krytyczny. sensor jest najlepszy gdy ma najwyższą wartość
+		funkcji f (patrz wzór \ref{wzor}).
+		Pod uwagę brane są tylko sensory pokrywające element
+		krytyczny(critical\_ field)
+		:param critical_field:
+		:param cover:
+		:param uncovered_fields:
+		:return:
+		"""
 		available_sensors=[]
 		for sensor in critical_field.sensors:
 			if sensor.active == True:
@@ -301,6 +358,14 @@ class Scheduler:
 
 
 	def get_sensor_value(self,sensor,uncovered_fields,critical_field,cover):
+		"""
+		Zwraca wage sensora sensor.
+		:param sensor:
+		:param uncovered_fields:
+		:param critical_field:
+		:param cover:
+		:return:
+		"""
 		value=0
 		for field in sensor.fields:
 			if field!=critical_field:
@@ -312,13 +377,25 @@ class Scheduler:
 		return value
 
 	def sensors_from_cover_number(self, field,cover):
+		"""
+		Zwrca liczbe sensorów z covera które pokrywają pole field
+		:param field:
+		:param cover:
+		:return:
+		"""
 		number=0
+
 		for sensor in cover:
 			if field in sensor.fields:
 				number=number+1
 		return number
 
 	def optimization(self, cover):
+		"""
+		usuwa z pokrycia(cover) jak najwięcej sensorów, tak by pozostałe sonsory nadal
+		pokrywały co najmniej q procent celów
+		:param cover:
+		"""
 		#usuwa sensory ktorych wyłączenie nie zmienia poziomu pokrycia
 		# fields_list=set()
 		# for sensor in cover:
@@ -355,11 +432,21 @@ class Scheduler:
 
 
 	def get_cover_targets(self,cover):
+		"""
+		zwraca liste targetów pokrywanych przez sensorvry z cover
+		:param cover:
+		:return:
+		"""
 		targets=set()
 		for sensor in cover:
 			targets.update(sensor.covering_targets)
 		return list(targets)
 	def get_cover_procent(self,cover):
+		"""
+		zwraca procent targetów pokrytych przez cover
+		:param cover:
+		:return:
+		"""
 		return len(self.get_cover_targets(cover))/self.target_number*100
 
 	def clean_cover(self, cover):

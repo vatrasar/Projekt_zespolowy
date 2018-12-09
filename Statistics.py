@@ -9,20 +9,23 @@ class Statistic:
 
 
     def get_simulation_time(self):
+        """
+        zwraca czas symulacji
+        :return:
+        """
         return round(self.stop-self.start_time,2)
     def stop_time(self):
+        """
+        zapisuje czas końca symulacji
+        """
         self.stop=time.time()
 
-    def update_state(self,sensors):
-        self.sensors=sensors
-
-    def get_active_sensors_number(self):
-        return len(list(filter(lambda x:x.active,self.sensors)))
-
-    def get_charged_sensors_count(self):
-        return len(list(filter(lambda x:x.battery>0,self.sensors)))
 
     def get_percent_observed_targets(self):
+        """
+        zwraca procent obserwowanych celów
+        :return:
+        """
         targets_set=set()
         for sensor in self.sensors:
             if(sensor.active==True):
